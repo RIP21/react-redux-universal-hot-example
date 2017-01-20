@@ -1,9 +1,9 @@
 import { connect } from 'react-redux';
-import React, { PropTypes } from 'react';
+import React, {Component, PropTypes } from 'react';
 import Helmet from 'react-helmet';
 import { bindActionCreators } from 'redux';
 import DisqusThread from 'react-disqus-thread';
-import { asyncConnect } from 'redux-async-connect';
+import {provideHooks} from 'redial';
 import { getById } from '../../utils/helpers';
 import { postsSelector } from '../../selector/selectors';
 import * as Empty from '../../constants/emptyEntities';
@@ -11,24 +11,15 @@ import BlogPost from '../../components/BlogPost/BlogPost';
 import * as postsActions from '../../redux/modules/posts';
 import * as authorsAction from '../../redux/modules/authors';
 
-@asyncConnect([{
-  deferred: true,
-  promise: ({store: {dispatch, getState}}) => {
-    const state = getState();
-    if (!postsActions.isLoaded(state) && !postsActions.isLoading(state)) {
-      return dispatch(postsActions.loadPosts());
-    }
-  }
-}, {
-  deferred: true,
-  promise: ({store: {dispatch, getState}}) => {
-    const state = getState();
-    if (!authorsAction.isLoaded(state)) {
-      return dispatch(authorsAction.loadAuthors());
-    }
-  }
-}])
-class PostPage extends React.Component {
+@provideHooks({
+  fetch: ({dispatch}) => {
+    return Promise.all([
+      dispatch(postsActions.loadPosts()),
+      dispatch(authorsAction.loadAuthors()),
+    ]);
+  },
+})
+class PostPage extends Component {
 
   postHelmet = {
     title: this.props.post.title,

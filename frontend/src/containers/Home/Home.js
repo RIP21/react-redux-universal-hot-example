@@ -1,31 +1,22 @@
 import React, { Component, PropTypes } from 'react';
 import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
-import { asyncConnect } from 'redux-async-connect';
 import { bindActionCreators } from 'redux';
+import {provideHooks} from 'redial';
 import BlogPost from '../../components/BlogPost/BlogPost';
 import { sortNewPostsFirstSelector } from '../../selector/selectors';
 import {StyledHome} from './HomeStyled';
 import * as postsActions from '../../redux/modules/posts';
 import * as authorsAction from '../../redux/modules/authors';
 
-
-@asyncConnect([{
-  deferred: true,
-  promise: ({store: {dispatch, getState}}) => {
-    const state = getState();
-    if (!postsActions.isLoaded(state) && !postsActions.isLoading(state)) {
-      return dispatch(postsActions.loadPosts());
-    }
-  }
-}, {
-  deferred: true,
-  promise: ({store: {dispatch, getState}}) => {
-    if (!authorsAction.isLoaded(getState())) {
-      return dispatch(authorsAction.loadAuthors());
-    }
-  }
-}])
+@provideHooks({
+  fetch: ({dispatch}) => {
+    return Promise.all([
+      dispatch(postsActions.loadPosts()),
+      dispatch(authorsAction.loadAuthors()),
+    ]);
+  },
+})
 class Home extends Component {
 
   static propTypes = {

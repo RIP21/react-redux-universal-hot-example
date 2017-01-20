@@ -5,10 +5,10 @@ import 'babel-polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { Router, browserHistory } from 'react-router';
+import { Router, browserHistory, match } from 'react-router';
 import { syncHistoryWithStore } from 'react-router-redux';
-import { ReduxAsyncConnect } from 'redux-async-connect';
 import ReactGA from 'react-ga';
+import {trigger} from 'redial';
 import useScroll from 'scroll-behavior/lib/useStandardScroll';
 import createStore from './redux/create';
 import ApiClient from './helpers/ApiClient';
@@ -30,23 +30,36 @@ const logPageView = () => {
   }
 };
 
-const component = (
-  <Router
-    onUpdate={logPageView}
-    render={props =>
-      <ReduxAsyncConnect {...props} helpers={{ client }} filter={item => !item.deferred} />
-      } history={history}
-  >
-    {getRoutes(store)}
-  </Router>
-);
+const routes = getRoutes(store);
 
 ReactDOM.render(
-  <Provider store={store} key="provider">
-    {component}
+  <Provider store={store}>
+    <Router routes={routes} history={history} onUpdate={logPageView}/>
   </Provider>,
   dest
 );
+
+history.listen((location) => {
+  match({routes, location}, (error, redirectLocation, renderProps) => {
+    if (renderProps) {
+      const {components} = renderProps;
+      const locals = {
+        path: renderProps.location.pathname,
+        query: renderProps.location.query,
+        params: renderProps.params,
+        dispatch: store.dispatch,
+      };
+
+      if (window.__INITIAL_STATE__) {
+        delete window.__INITIAL_STATE__;
+      } else {
+        trigger('fetch', components, locals);
+      }
+
+      trigger('defer', components, locals);
+    }
+  });
+});
 
 if (process.env.NODE_ENV !== 'production') {
   window.React = React; // enable debugger
@@ -56,15 +69,16 @@ if (process.env.NODE_ENV !== 'production') {
   }
 }
 
-if (__DEVTOOLS__ && !window.devToolsExtension) {
-  const DevTools = require('./containers/DevTools/DevTools');
-  ReactDOM.render(
-    <Provider store={store} key="provider">
-      <div>
-        {component}
-        <DevTools />
-      </div>
-    </Provider>,
-    dest
-  );
-}
+//
+// if (__DEVTOOLS__ && !window.devToolsExtension) {
+//   const DevTools = require('./containers/DevTools/DevTools');
+//   ReactDOM.render(
+//     <Provider store={store} key="provider">
+//       <div>
+//         {component}
+//         <DevTools />
+//       </div>
+//     </Provider>,
+//     dest
+//   );
+// }

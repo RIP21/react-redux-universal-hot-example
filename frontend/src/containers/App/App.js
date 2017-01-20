@@ -3,23 +3,20 @@ import { connect } from 'react-redux';
 import { IndexLink } from 'react-router';
 import Helmet from 'react-helmet';
 import { LinkContainer } from 'react-router-bootstrap';
+import { provideHooks } from 'redial';
 import Navbar from 'react-bootstrap/lib/Navbar';
 import Nav from 'react-bootstrap/lib/Nav';
 import NavItem from 'react-bootstrap/lib/NavItem';
-import { asyncConnect } from 'redux-async-connect';
 import ErrorModal from '../../components/ErrorModal/ErrorModal';
-import { logout, isLoaded, load as loadAuth } from '../../redux/modules/auth';
+import { logout, load as loadAuth } from '../../redux/modules/auth';
 import { closeModal } from '../../redux/modules/error';
 import { AppContent, StyledApp } from './AppStyles';
 
-@asyncConnect([{
-  deferred: true,
-  promise: ({store: {dispatch, getState}}) => {
-    if (!isLoaded(getState())) {
-      return dispatch(loadAuth());
-    }
+@provideHooks({
+  fetch: ({dispatch}) => {
+    return dispatch(loadAuth());
   }
-}])
+})
 class App extends Component {
   static propTypes = {
     children: PropTypes.object.isRequired,

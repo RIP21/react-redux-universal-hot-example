@@ -57,8 +57,8 @@ export default function privateRoute() {
       }
     }
 
-    if (WrappedComponent.reduxAsyncConnect) {
-      AuthWrapper.reduxAsyncConnect = WrappedComponent.reduxAsyncConnect;
+    if (WrappedComponent['@@redial-hooks']) {
+      AuthWrapper['@@redial-hooks'] = WrappedComponent['@@redial-hooks'];
     }
 
     return connect(mapStateToProps, mapDispatchToProps)(AuthWrapper);
