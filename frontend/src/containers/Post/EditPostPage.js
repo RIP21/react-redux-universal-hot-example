@@ -11,11 +11,13 @@ import * as postsActions from '../../redux/modules/posts';
 import * as authorsAction from '../../redux/modules/authors';
 
 @provideHooks({
-  fetch: ({dispatch}) => {
-    return Promise.all([
-      dispatch(postsActions.loadPosts()),
-      dispatch(authorsAction.loadAuthors()),
-    ]);
+  fetch: ({dispatch, getState}) => {
+    if (!postsActions.isLoaded(getState())) {
+      return Promise.all([
+        dispatch(postsActions.loadPosts()),
+        dispatch(authorsAction.loadAuthors()),
+      ]);
+    }
   },
 })
 class EditPostPage extends Component {

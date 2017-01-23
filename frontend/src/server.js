@@ -94,6 +94,7 @@ app.use((req, res) => {
         query: renderProps.location.query,
         params: renderProps.params,
         dispatch: store.dispatch,
+        getState: store.getState,
       };
 
       trigger('fetch', components, locals)

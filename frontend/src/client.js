@@ -48,6 +48,7 @@ history.listen((location) => {
         query: renderProps.location.query,
         params: renderProps.params,
         dispatch: store.dispatch,
+        getState: store.getState
       };
 
       if (window.__INITIAL_STATE__) {

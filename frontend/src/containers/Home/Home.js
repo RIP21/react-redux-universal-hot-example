@@ -2,19 +2,21 @@ import React, { Component, PropTypes } from 'react';
 import Helmet from 'react-helmet';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import {provideHooks} from 'redial';
+import { provideHooks } from 'redial';
 import BlogPost from '../../components/BlogPost/BlogPost';
 import { sortNewPostsFirstSelector } from '../../selector/selectors';
-import {StyledHome} from './HomeStyled';
+import { StyledHome } from './HomeStyled';
 import * as postsActions from '../../redux/modules/posts';
 import * as authorsAction from '../../redux/modules/authors';
 
 @provideHooks({
-  fetch: ({dispatch}) => {
-    return Promise.all([
-      dispatch(postsActions.loadPosts()),
-      dispatch(authorsAction.loadAuthors()),
-    ]);
+  fetch: ({dispatch, getState}) => {
+    if (!postsActions.isLoaded(getState())) {
+      return Promise.all([
+        dispatch(postsActions.loadPosts()),
+        dispatch(authorsAction.loadAuthors()),
+      ]);
+    }
   },
 })
 class Home extends Component {
@@ -42,7 +44,7 @@ class Home extends Component {
         </div>
         <div className="container">
           {this.props.posts.map(
-            post => post.published ? <BlogPost key={post.id} post={post} /> : null
+            post => post.published ? <BlogPost key={post.id} post={post}/> : null
           )}
         </div>
       </StyledHome>

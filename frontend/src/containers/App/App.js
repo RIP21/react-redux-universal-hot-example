@@ -8,13 +8,13 @@ import Navbar from 'react-bootstrap/lib/Navbar';
 import Nav from 'react-bootstrap/lib/Nav';
 import NavItem from 'react-bootstrap/lib/NavItem';
 import ErrorModal from '../../components/ErrorModal/ErrorModal';
-import { logout, load as loadAuth } from '../../redux/modules/auth';
+import { logout, isLoaded, load as loadAuth } from '../../redux/modules/auth';
 import { closeModal } from '../../redux/modules/error';
 import { AppContent, StyledApp } from './AppStyles';
 
 @provideHooks({
-  fetch: ({dispatch}) => {
-    return dispatch(loadAuth());
+  fetch: ({dispatch, getState}) => {
+    return !isLoaded(getState()) ? dispatch(loadAuth()) : null;
   }
 })
 class App extends Component {

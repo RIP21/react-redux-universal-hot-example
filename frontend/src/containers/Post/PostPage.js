@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import React, {Component, PropTypes } from 'react';
 import Helmet from 'react-helmet';
 import { bindActionCreators } from 'redux';
-import DisqusThread from 'react-disqus-thread';
+import DisqusThread from 'react-disqus-comments';
 import {provideHooks} from 'redial';
 import { getById } from '../../utils/helpers';
 import { postsSelector } from '../../selector/selectors';
@@ -12,11 +12,13 @@ import * as postsActions from '../../redux/modules/posts';
 import * as authorsAction from '../../redux/modules/authors';
 
 @provideHooks({
-  fetch: ({dispatch}) => {
-    return Promise.all([
-      dispatch(postsActions.loadPosts()),
-      dispatch(authorsAction.loadAuthors()),
-    ]);
+  fetch: ({dispatch, getState}) => {
+    if (!postsActions.isLoaded(getState())) {
+      return Promise.all([
+        dispatch(postsActions.loadPosts()),
+        dispatch(authorsAction.loadAuthors()),
+      ]);
+    }
   },
 })
 class PostPage extends Component {
